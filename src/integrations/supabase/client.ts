@@ -2,7 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 
-const SUPABASE_URL = "https://promov-db-tintas-renner-supabase.m89d5v.easypanel.host";
+const SUPABASE_URL = "https://nomaddb.promov.me";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE";
 
 // Import the supabase client like this:

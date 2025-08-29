@@ -86,7 +86,7 @@ serve(async (req) => {
     }
 
     // Inicializar cliente Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? 'https://database-supabase.7hatw3.easypanel.host';
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? 'https://nomaddb.promov.me';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE';
     console.log(`Conectando ao Supabase: URL=${supabaseUrl.substring(0, 20)}...`);
     

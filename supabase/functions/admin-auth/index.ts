@@ -15,7 +15,7 @@ serve(async (req) => {
   
   try {
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? 'https://database-supabase.7hatw3.easypanel.host',
+      Deno.env.get('SUPABASE_URL') ?? 'https://nomaddb.promov.me',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q'
     );
     
