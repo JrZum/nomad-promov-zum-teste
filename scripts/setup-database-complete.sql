@@ -1,24 +1,9 @@
--- =====================================================
--- SETUP COMPLETO DO BANCO DE DADOS - SISTEMA NÚMEROS DA SORTE
--- Supabase Auto-hospedado: https://nomaddb.promov.me
--- Data: 2025-01-29
--- Versão: Edge Functions
--- =====================================================
-
--- 1. EXTENSÕES NECESSÁRIAS
--- =====================================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 2. SCHEMAS
--- =====================================================
 CREATE SCHEMA IF NOT EXISTS public;
 CREATE SCHEMA IF NOT EXISTS participants;
 
--- 3. TABELAS PRINCIPAIS
--- =====================================================
-
--- Tabela de Administradores
 CREATE TABLE IF NOT EXISTS public.admins (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -27,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.admins (
   password TEXT NOT NULL
 );
 
--- Tabela de Sessões de Admin
+
 CREATE TABLE IF NOT EXISTS public.admin_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -37,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.admin_sessions (
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
--- Tabela de Configuração da Campanha
+
 CREATE TABLE IF NOT EXISTS public.configuracao_campanha (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -49,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.configuracao_campanha (
   titulo_site TEXT DEFAULT 'Sistema de Números da Sorte'
 );
 
--- Tabela de Participantes
+
 CREATE TABLE IF NOT EXISTS public.participantes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -72,7 +57,7 @@ CREATE TABLE IF NOT EXISTS public.participantes (
   quantidade_numeros INTEGER DEFAULT 0
 );
 
--- Tabela de Números da Sorte
+
 CREATE TABLE IF NOT EXISTS public.numeros_sorte (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -81,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.numeros_sorte (
   obs TEXT
 );
 
--- Tabela de Vendas
+
 CREATE TABLE IF NOT EXISTS public.vendas (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -92,7 +77,7 @@ CREATE TABLE IF NOT EXISTS public.vendas (
   imagemCupom TEXT
 );
 
--- Tabela de Configuração de Login
+
 CREATE TABLE IF NOT EXISTS public.configuracao_login (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -101,7 +86,7 @@ CREATE TABLE IF NOT EXISTS public.configuracao_login (
   ativo BOOLEAN NOT NULL DEFAULT true
 );
 
--- Tabela de Lojas Participantes
+
 CREATE TABLE IF NOT EXISTS public.lojas_participantes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -112,7 +97,7 @@ CREATE TABLE IF NOT EXISTS public.lojas_participantes (
   ativa BOOLEAN NOT NULL DEFAULT true
 );
 
--- Tabelas do Módulo Raspadinha
+
 CREATE TABLE IF NOT EXISTS public.configuracao_raspadinha (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -141,8 +126,6 @@ CREATE TABLE IF NOT EXISTS public.sorteios_raspadinha (
   quantidade_premiados INTEGER NOT NULL DEFAULT 1
 );
 
--- 4. SCHEMA PARTICIPANTS (Replica)
--- =====================================================
 CREATE TABLE IF NOT EXISTS participants.participantes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -173,8 +156,6 @@ CREATE TABLE IF NOT EXISTS participants.numeros_sorte (
   obs TEXT
 );
 
--- 5. ÍNDICES PARA PERFORMANCE
--- =====================================================
 CREATE INDEX IF NOT EXISTS idx_participantes_documento ON public.participantes (documento);
 CREATE INDEX IF NOT EXISTS idx_numeros_sorte_documento ON public.numeros_sorte (documento);
 CREATE INDEX IF NOT EXISTS idx_participants_participantes_documento ON participants.participantes (documento);
@@ -184,10 +165,6 @@ CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires_at ON public.admin_session
 CREATE INDEX IF NOT EXISTS idx_vendas_documento ON public.vendas (documento_participante);
 CREATE INDEX IF NOT EXISTS idx_vendas_data ON public.vendas (data_venda);
 
--- 6. STORAGE BUCKETS (S3)
--- =====================================================
-
--- Bucket para banners e favicons
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'banners',
@@ -197,7 +174,7 @@ VALUES (
   ARRAY['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/svg+xml']::text[]
 ) ON CONFLICT (id) DO NOTHING;
 
--- Bucket para cupons fiscais
+
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'cupons-fiscais',
@@ -207,7 +184,7 @@ VALUES (
   ARRAY['image/jpeg', 'image/png', 'image/jpg', 'image/webp']::text[]
 ) ON CONFLICT (id) DO NOTHING;
 
--- Bucket para prêmios da raspadinha
+
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'premios-raspadinha',
@@ -217,10 +194,6 @@ VALUES (
   ARRAY['image/jpeg', 'image/png', 'image/jpg', 'image/webp']::text[]
 ) ON CONFLICT (id) DO NOTHING;
 
--- 7. VIEWS
--- =====================================================
-
--- View para números de cada participante (public)
 CREATE OR REPLACE VIEW public.numeros_cada_participante AS
 SELECT
   p.id,
@@ -245,7 +218,7 @@ GROUP BY
   p.id, p.documento, p.nome, p.email, p.telefone, p.rua, p.numero, 
   p.complemento, p.cidade, p.cep, p.uf, p.senha, p.quantidade_numeros;
 
--- View para números de cada participante (participants)
+
 CREATE OR REPLACE VIEW participants.numeros_cada_participante AS
 SELECT
   p.id,
@@ -270,10 +243,6 @@ GROUP BY
   p.id, p.documento, p.nome, p.email, p.telefone, p.rua, p.numero, 
   p.complemento, p.cidade, p.cep, p.uf, p.senha, p.quantidade_numeros;
 
--- 8. FUNÇÕES DO BANCO (Para suporte a Edge Functions)
--- =====================================================
-
--- Função para atualizar updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -282,7 +251,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Função para atualizar quantidade de números
+
 CREATE OR REPLACE FUNCTION update_participante_quantidade_numeros()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -307,7 +276,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Função de login admin (compatível com edge functions)
+
 CREATE OR REPLACE FUNCTION admin_login(admin_email TEXT, admin_password TEXT)
 RETURNS TABLE(success BOOLEAN, token TEXT, message TEXT)
 LANGUAGE plpgsql
@@ -318,7 +287,7 @@ DECLARE
     session_token TEXT;
     expires_time TIMESTAMP WITH TIME ZONE;
 BEGIN
-    -- Buscar admin
+    
     SELECT * INTO admin_record FROM public.admins WHERE email = admin_email;
     
     IF admin_record IS NULL THEN
@@ -326,20 +295,20 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Verificar senha (assumindo que está em hash)
+    
     IF admin_record.password != crypt(admin_password, admin_record.password) THEN
         RETURN QUERY SELECT false, ''::TEXT, 'Senha incorreta'::TEXT;
         RETURN;
     END IF;
     
-    -- Gerar token
+    
     session_token := encode(gen_random_bytes(32), 'hex');
     expires_time := now() + interval '24 hours';
     
-    -- Limpar sessões expiradas
+    
     DELETE FROM public.admin_sessions WHERE expires_at < now();
     
-    -- Criar nova sessão
+    
     INSERT INTO public.admin_sessions (admin_id, token, expires_at)
     VALUES (admin_record.id, session_token, expires_time);
     
@@ -347,7 +316,7 @@ BEGIN
 END;
 $$;
 
--- Função para verificar admin (compatível com edge functions)
+
 CREATE OR REPLACE FUNCTION verify_admin(auth_token TEXT)
 RETURNS TABLE(valid BOOLEAN, admin_id UUID, message TEXT)
 LANGUAGE plpgsql
@@ -356,7 +325,7 @@ AS $$
 DECLARE
     session_record RECORD;
 BEGIN
-    -- Buscar sessão
+    
     SELECT * INTO session_record 
     FROM public.admin_sessions 
     WHERE token = auth_token AND expires_at > now();
@@ -366,7 +335,7 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Atualizar tempo de expiração
+    
     UPDATE public.admin_sessions 
     SET expires_at = now() + interval '24 hours'
     WHERE token = auth_token;
@@ -375,7 +344,7 @@ BEGIN
 END;
 $$;
 
--- Função para cadastrar participante (compatível com edge functions)
+
 CREATE OR REPLACE FUNCTION cadastrar_participante(
     p_documento TEXT,
     p_nome TEXT,
@@ -400,16 +369,16 @@ DECLARE
     new_participant_id UUID;
     hashed_password TEXT;
 BEGIN
-    -- Verificar se já existe
+    
     IF EXISTS (SELECT 1 FROM public.participantes WHERE documento = p_documento) THEN
         RETURN QUERY SELECT false, NULL::UUID, 'Participante já cadastrado'::TEXT;
         RETURN;
     END IF;
     
-    -- Hash da senha
+    
     hashed_password := crypt(p_senha, gen_salt('bf'));
     
-    -- Inserir participante
+    
     INSERT INTO public.participantes (
         documento, nome, email, telefone, genero, idade,
         rua, numero, complemento, bairro, cidade, cep, uf, senha
@@ -422,7 +391,7 @@ BEGIN
 END;
 $$;
 
--- Função para configuração de login dinâmico
+
 CREATE OR REPLACE FUNCTION salvar_configuracao_login(p_metodo_login TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -431,10 +400,10 @@ AS $$
 DECLARE
     v_result JSONB;
 BEGIN
-    -- Desativar configurações anteriores
+    
     UPDATE public.configuracao_login SET ativo = false;
     
-    -- Inserir nova configuração
+    
     INSERT INTO public.configuracao_login (metodo_login, ativo)
     VALUES (p_metodo_login, true);
     
@@ -448,7 +417,7 @@ BEGIN
 END;
 $$;
 
--- Função para obter configuração de login ativa
+
 CREATE OR REPLACE FUNCTION obter_configuracao_login()
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -481,7 +450,7 @@ BEGIN
 END;
 $$;
 
--- Função para login dinâmico de participante
+
 CREATE OR REPLACE FUNCTION login_participante_dinamico(p_valor_login TEXT, p_senha TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -494,11 +463,11 @@ DECLARE
     v_participante RECORD;
     v_result JSONB;
 BEGIN
-    -- Obter configuração ativa
+    
     SELECT obter_configuracao_login() INTO v_config;
     v_metodo_login := v_config->>'metodo_login';
     
-    -- Determinar campo de busca
+    
     CASE v_metodo_login
         WHEN 'celular' THEN v_campo_busca := 'telefone';
         WHEN 'documento' THEN v_campo_busca := 'documento';
@@ -506,12 +475,12 @@ BEGIN
         ELSE v_campo_busca := 'telefone';
     END CASE;
     
-    -- Buscar participante dinamicamente
+    
     EXECUTE format('SELECT * FROM public.participantes WHERE %I = $1', v_campo_busca)
     INTO v_participante
     USING p_valor_login;
     
-    -- Verificar se encontrou e senha correta
+    
     IF v_participante IS NULL THEN
         v_result := jsonb_build_object(
             'success', false,
@@ -534,7 +503,7 @@ BEGIN
 END;
 $$;
 
--- Função para gerar números da sorte
+
 CREATE OR REPLACE FUNCTION gerar_numeros_sorte(
     p_documento TEXT,
     p_quantidade INTEGER,
@@ -550,22 +519,22 @@ DECLARE
     numero_atual INTEGER;
     i INTEGER;
 BEGIN
-    -- Verificar se participante existe
+    
     IF NOT EXISTS (SELECT 1 FROM public.participantes WHERE documento = p_documento) THEN
         RETURN QUERY SELECT false, ARRAY[]::INTEGER[], 'Participante não encontrado'::TEXT;
         RETURN;
     END IF;
     
-    -- Gerar números únicos
+    
     numeros_gerados := ARRAY[]::INTEGER[];
     i := 0;
     
     WHILE i < p_quantidade LOOP
         numero_atual := floor(random() * (p_serie_final - p_serie_inicial + 1) + p_serie_inicial)::INTEGER;
         
-        -- Verificar se número já existe
+        
         IF NOT EXISTS (SELECT 1 FROM public.numeros_sorte WHERE numero = numero_atual) THEN
-            -- Inserir número
+            
             INSERT INTO public.numeros_sorte (numero, documento) 
             VALUES (numero_atual, p_documento);
             
@@ -578,7 +547,7 @@ BEGIN
 END;
 $$;
 
--- Função helper para URLs do storage
+
 CREATE OR REPLACE FUNCTION get_cupom_storage_url(file_name TEXT)
 RETURNS TEXT
 LANGUAGE plpgsql
@@ -592,7 +561,7 @@ BEGIN
 END;
 $$;
 
--- Função para atualizar imagem do cupom
+
 CREATE OR REPLACE FUNCTION atualizar_imagem_cupom(
     p_venda_id UUID,
     p_nome_arquivo TEXT
@@ -628,10 +597,6 @@ BEGIN
 END;
 $$;
 
--- 9. TRIGGERS
--- =====================================================
-
--- Triggers para updated_at
 CREATE TRIGGER update_admins_updated_at BEFORE UPDATE ON public.admins FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_admin_sessions_updated_at BEFORE UPDATE ON public.admin_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_configuracao_campanha_updated_at BEFORE UPDATE ON public.configuracao_campanha FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -641,15 +606,11 @@ CREATE TRIGGER update_configuracao_raspadinha_updated_at BEFORE UPDATE ON public
 CREATE TRIGGER update_premiacao_raspadinha_updated_at BEFORE UPDATE ON public.premiacao_raspadinha FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_sorteios_raspadinha_updated_at BEFORE UPDATE ON public.sorteios_raspadinha FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Trigger para quantidade de números
+
 CREATE TRIGGER trigger_update_quantidade_numeros 
     AFTER INSERT OR DELETE ON public.numeros_sorte 
     FOR EACH ROW EXECUTE FUNCTION update_participante_quantidade_numeros();
 
--- 10. ROW LEVEL SECURITY (RLS)
--- =====================================================
-
--- Habilitar RLS em todas as tabelas
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.configuracao_campanha ENABLE ROW LEVEL SECURITY;
@@ -662,35 +623,27 @@ ALTER TABLE public.configuracao_raspadinha ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.premiacao_raspadinha ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sorteios_raspadinha ENABLE ROW LEVEL SECURITY;
 
--- Habilitar RLS no storage
+
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
--- 11. POLÍTICAS RLS
--- =====================================================
-
--- Políticas para admins
 CREATE POLICY "Admins são acessíveis por qualquer um" ON public.admins FOR ALL USING (true);
 CREATE POLICY "Admin sessions são acessíveis por qualquer um" ON public.admin_sessions FOR ALL USING (true);
 
--- Políticas para configurações
+
 CREATE POLICY "Configuração campanha é acessível por qualquer um" ON public.configuracao_campanha FOR ALL USING (true);
 CREATE POLICY "Configuração login é acessível por qualquer um" ON public.configuracao_login FOR ALL USING (true);
 CREATE POLICY "Lojas participantes são acessíveis por qualquer um" ON public.lojas_participantes FOR ALL USING (true);
 
--- Políticas para participantes
+
 CREATE POLICY "Participantes são acessíveis por qualquer um" ON public.participantes FOR ALL USING (true);
 CREATE POLICY "Números da sorte são acessíveis por qualquer um" ON public.numeros_sorte FOR ALL USING (true);
 CREATE POLICY "Vendas são acessíveis por qualquer um" ON public.vendas FOR ALL USING (true);
 
--- Políticas para raspadinha
+
 CREATE POLICY "Configuração raspadinha é acessível por qualquer um" ON public.configuracao_raspadinha FOR ALL USING (true);
 CREATE POLICY "Premiação raspadinha é acessível por qualquer um" ON public.premiacao_raspadinha FOR ALL USING (true);
 CREATE POLICY "Sorteios raspadinha são acessíveis por qualquer um" ON public.sorteios_raspadinha FOR ALL USING (true);
 
--- 12. POLÍTICAS DE STORAGE
--- =====================================================
-
--- Políticas para bucket banners
 CREATE POLICY "Banners são publicamente acessíveis" ON storage.objects FOR SELECT USING (bucket_id = 'banners');
 CREATE POLICY "Qualquer um pode fazer upload de banners" ON storage.objects FOR INSERT WITH CHECK (
     bucket_id = 'banners' 
@@ -699,7 +652,7 @@ CREATE POLICY "Qualquer um pode fazer upload de banners" ON storage.objects FOR 
 CREATE POLICY "Qualquer um pode atualizar banners" ON storage.objects FOR UPDATE USING (bucket_id = 'banners');
 CREATE POLICY "Qualquer um pode deletar banners" ON storage.objects FOR DELETE USING (bucket_id = 'banners');
 
--- Políticas para bucket cupons-fiscais
+
 CREATE POLICY "Cupons fiscais são publicamente acessíveis" ON storage.objects FOR SELECT USING (bucket_id = 'cupons-fiscais');
 CREATE POLICY "Qualquer um pode fazer upload de cupons" ON storage.objects FOR INSERT WITH CHECK (
     bucket_id = 'cupons-fiscais' 
@@ -708,7 +661,7 @@ CREATE POLICY "Qualquer um pode fazer upload de cupons" ON storage.objects FOR I
 CREATE POLICY "Qualquer um pode atualizar cupons" ON storage.objects FOR UPDATE USING (bucket_id = 'cupons-fiscais');
 CREATE POLICY "Qualquer um pode deletar cupons" ON storage.objects FOR DELETE USING (bucket_id = 'cupons-fiscais');
 
--- Políticas para bucket premios-raspadinha
+
 CREATE POLICY "Prêmios raspadinha são publicamente acessíveis" ON storage.objects FOR SELECT USING (bucket_id = 'premios-raspadinha');
 CREATE POLICY "Qualquer um pode fazer upload de prêmios" ON storage.objects FOR INSERT WITH CHECK (
     bucket_id = 'premios-raspadinha' 
@@ -717,22 +670,18 @@ CREATE POLICY "Qualquer um pode fazer upload de prêmios" ON storage.objects FOR
 CREATE POLICY "Qualquer um pode atualizar prêmios" ON storage.objects FOR UPDATE USING (bucket_id = 'premios-raspadinha');
 CREATE POLICY "Qualquer um pode deletar prêmios" ON storage.objects FOR DELETE USING (bucket_id = 'premios-raspadinha');
 
--- 13. PERMISSÕES
--- =====================================================
-
--- Permissões de schema
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT USAGE ON SCHEMA participants TO anon, authenticated;
 
--- Permissões de tabelas
+
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA participants TO anon, authenticated;
 
--- Permissões de sequências
+
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA participants TO anon, authenticated;
 
--- Permissões de funções
+
 GRANT EXECUTE ON FUNCTION admin_login(TEXT, TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION verify_admin(TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION cadastrar_participante(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;
@@ -743,39 +692,30 @@ GRANT EXECUTE ON FUNCTION gerar_numeros_sorte(TEXT, INTEGER, INTEGER, INTEGER) T
 GRANT EXECUTE ON FUNCTION get_cupom_storage_url(TEXT) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION atualizar_imagem_cupom(UUID, TEXT) TO anon, authenticated;
 
--- 14. DADOS INICIAIS
--- =====================================================
-
--- Admin padrão (email: admin@sistema.com, senha: admin123)
 INSERT INTO public.admins (email, password) 
 VALUES ('admin@sistema.com', crypt('admin123', gen_salt('bf')))
 ON CONFLICT (email) DO NOTHING;
 
--- Configuração da campanha padrão
+
 INSERT INTO public.configuracao_campanha (serie_inicial, serie_final, titulo_site) 
 VALUES (1, 999999, 'Sistema de Números da Sorte')
 ON CONFLICT DO NOTHING;
 
--- Configuração de login padrão
+
 INSERT INTO public.configuracao_login (metodo_login, ativo) 
 VALUES ('celular', true)
 ON CONFLICT DO NOTHING;
 
--- Configuração da raspadinha padrão
+
 INSERT INTO public.configuracao_raspadinha (ativa) 
 VALUES (false)
 ON CONFLICT DO NOTHING;
 
--- 15. COMENTÁRIOS PARA DOCUMENTAÇÃO
--- =====================================================
 COMMENT ON TABLE public.configuracao_login IS 'Tabela para configuração dinâmica do método de login dos participantes';
 COMMENT ON FUNCTION cadastrar_participante IS 'Função para cadastro seguro de participantes, contorna RLS para inserção';
 COMMENT ON FUNCTION login_participante_dinamico IS 'Função para login dinâmico baseado na configuração ativa';
 COMMENT ON COLUMN public.vendas.imagemCupom IS 'URL completa do storage do Supabase onde está armazenada a imagem do cupom fiscal';
 
--- 16. LIMPEZA DE SESSÕES EXPIRADAS (Opcional)
--- =====================================================
--- Criar função para limpeza automática de sessões expiradas
 CREATE OR REPLACE FUNCTION cleanup_expired_sessions()
 RETURNS void
 LANGUAGE plpgsql
@@ -786,11 +726,6 @@ BEGIN
 END;
 $$;
 
--- =====================================================
--- FIM DO SETUP
--- =====================================================
-
--- Verificação final
 SELECT 
     'Setup completo executado com sucesso!' as status,
     now() as timestamp,
