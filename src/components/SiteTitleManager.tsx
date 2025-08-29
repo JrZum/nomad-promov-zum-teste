@@ -6,7 +6,7 @@ const SiteTitleManager = () => {
 
   useEffect(() => {
     if (!configLoaded) return;
-    const title = (configData as any)?.site_title as string | undefined;
+    const title = (configData as any)?.titulo_site as string | undefined;
     if (title && title.length > 0) {
       document.title = title;
     }
