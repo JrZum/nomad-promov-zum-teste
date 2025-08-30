@@ -26,7 +26,7 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
       p_email: values.email,
       p_telefone: values.telefone,
       p_genero: 'Não informado',
-      p_idade: '18', // Data de nascimento ou idade como string
+      p_idade: values.data_nascimento ? new Date().getFullYear() - values.data_nascimento.getFullYear() : '18', // Calcular idade a partir da data de nascimento
       p_rua: values.rua,
       p_numero: values.numero,
       p_complemento: values.complemento || '',

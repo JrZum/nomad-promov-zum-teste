@@ -29,7 +29,7 @@ const RegisterForm = () => {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       nome: "",
-      data_nascimento: undefined,
+      data_nascimento: new Date(), // Inicializar com data padrão
       email: "",
       telefone: "",
       documento: "",
