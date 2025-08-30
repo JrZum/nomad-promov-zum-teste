@@ -4,6 +4,15 @@
 -- Habilitar extensão pgcrypto se não estiver habilitada
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- Verificar se a extensão está ativa
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto') THEN
+        RAISE EXCEPTION 'Extensão pgcrypto não foi instalada corretamente';
+    END IF;
+END
+$$;
+
 -- Remover função existente se houver (todas as versões possíveis)
 DROP FUNCTION IF EXISTS cadastrar_participante(text,text,text,text,text,text,text,text,text,text,text,text,text,text);
 DROP FUNCTION IF EXISTS cadastrar_participante(text,text,text,text,text,text,text,text,text,text,text,text,text);
@@ -51,7 +60,7 @@ BEGIN
   ) VALUES (
     p_nome, p_genero, p_email, p_telefone, p_documento,
     p_rua, p_numero, p_bairro, NULLIF(p_complemento, ''), p_cep,
-    p_cidade, p_uf, p_idade, crypt(p_senha, gen_salt('bf')), NOW()
+    p_cidade, p_uf, p_idade, crypt(p_senha, gen_salt('bf', 8)), NOW()
   ) RETURNING id INTO participante_id;
 
   -- Retornar sucesso
