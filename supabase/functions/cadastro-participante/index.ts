@@ -11,11 +11,13 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log("Iniciando processamento da requisição cadastro-participante");
+  console.log("=== INICIANDO CADASTRO-PARTICIPANTE ===");
+  console.log("Método da requisição:", req.method);
+  console.log("Headers da requisição:", Object.fromEntries(req.headers.entries()));
   
   // Lidar com requisições OPTIONS (CORS preflight)
   if (req.method === 'OPTIONS') {
-    console.log("Requisição OPTIONS recebida - retornando headers CORS");
+    console.log("✅ Requisição OPTIONS - retornando CORS headers");
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -88,10 +90,28 @@ serve(async (req) => {
     }
 
     // Inicializar cliente Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? 'https://nomaddb.promov.me';
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE';
-    console.log(`Conectando ao Supabase: URL=${supabaseUrl.substring(0, 20)}...`);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
     
+    console.log("🔗 Variáveis de ambiente:");
+    console.log("- SUPABASE_URL:", supabaseUrl ? "✅ Definida" : "❌ Não definida");
+    console.log("- SUPABASE_ANON_KEY:", supabaseAnonKey ? "✅ Definida" : "❌ Não definida");
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("❌ Variáveis de ambiente do Supabase não configuradas");
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "Configuração do servidor incompleta" 
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    console.log(`✅ Conectando ao Supabase: ${supabaseUrl.substring(0, 30)}...`);
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     // Verificar se o documento já existe com consulta explícita
@@ -182,13 +202,17 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("Erro no cadastro:", error);
+    console.error("❌ ERRO CRÍTICO NO CADASTRO:", error);
+    console.error("Stack trace:", error.stack);
+    console.error("Tipo do erro:", typeof error);
+    console.error("Nome do erro:", error.name);
     
     return new Response(
       JSON.stringify({ 
         success: false,
         error: "Falha ao processar o cadastro",
-        details: error.message 
+        details: error.message,
+        timestamp: new Date().toISOString()
       }),
       {
         status: 500,
