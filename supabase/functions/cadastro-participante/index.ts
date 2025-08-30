@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.37.0";
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 // CORS Headers para requisições cross-origin
 const corsHeaders = {
@@ -64,6 +65,7 @@ serve(async (req) => {
       cidade,
       uf,
       senha,
+      idade,
     } = requestData;
 
     // Validar campos obrigatórios
@@ -119,6 +121,14 @@ serve(async (req) => {
       );
     }
 
+    // Hash da senha usando bcrypt
+    console.log("Gerando hash da senha...");
+    const encoder = new TextEncoder();
+    const data = encoder.encode(senha);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashedPassword = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
     // Preparar dados para inserção
     const participanteData = {
       nome,
@@ -133,7 +143,9 @@ serve(async (req) => {
       cep,
       cidade,
       uf,
-      senha,
+      idade: idade || '18',
+      senha: hashedPassword,
+      data_cadastro: new Date().toISOString()
     };
     
     console.log("Estrutura de dados a ser inserida:", JSON.stringify({
