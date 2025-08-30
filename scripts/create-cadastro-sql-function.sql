@@ -4,6 +4,12 @@
 -- Habilitar extensão pgcrypto se não estiver habilitada
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- Remover função existente se houver (todas as versões possíveis)
+DROP FUNCTION IF EXISTS cadastrar_participante(text,text,text,text,text,text,text,text,text,text,text,text,text,text);
+DROP FUNCTION IF EXISTS cadastrar_participante(text,text,text,text,text,text,text,text,text,text,text,text,text);
+DROP FUNCTION IF EXISTS public.cadastrar_participante(text,text,text,text,text,text,text,text,text,text,text,text,text,text);
+DROP FUNCTION IF EXISTS public.cadastrar_participante(text,text,text,text,text,text,text,text,text,text,text,text,text);
+
 -- Criar ou substituir a função de cadastro
 CREATE OR REPLACE FUNCTION cadastrar_participante(
   p_nome TEXT,
