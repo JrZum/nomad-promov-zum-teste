@@ -14,7 +14,7 @@ export const useLoginConfiguration = () => {
     queryKey: ["login-configuration"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.rpc('obter_configuracao_login' as any);
+        const { data, error } = await supabase.functions.invoke('configuracao-login');
 
         if (error) {
           console.error("Erro ao buscar configuração de login:", error);

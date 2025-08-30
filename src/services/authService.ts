@@ -32,22 +32,24 @@ export const authService = {
         senha: "[REDACTED]"
       });
 
-      // Chamar a função SQL diretamente
-      const { data: response, error } = await supabase.rpc('cadastrar_participante', {
-        p_nome: data.nome,
-        p_genero: data.genero || 'Não informado',
-        p_email: data.email,
-        p_telefone: data.telefone,
-        p_documento: data.documento,
-        p_rua: data.rua,
-        p_numero: data.numero,
-        p_bairro: data.bairro,
-        p_complemento: data.complemento || '',
-        p_cep: data.cep,
-        p_cidade: data.cidade,
-        p_uf: data.uf,
-        p_senha: data.senha,
-        p_idade: data.idade || '18'
+      // Chamar a Edge Function
+      const { data: response, error } = await supabase.functions.invoke('cadastro-participante', {
+        body: {
+          nome: data.nome,
+          genero: data.genero || 'Não informado',
+          email: data.email,
+          telefone: data.telefone,
+          documento: data.documento,
+          rua: data.rua,
+          numero: data.numero,
+          bairro: data.bairro,
+          complemento: data.complemento || '',
+          cep: data.cep,
+          cidade: data.cidade,
+          uf: data.uf,
+          senha: data.senha,
+          idade: data.idade || '18'
+        }
       });
 
       console.log("Resposta da Edge Function:", response);

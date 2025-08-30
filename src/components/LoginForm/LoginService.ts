@@ -6,10 +6,12 @@ export const loginParticipante = async (values: LoginFormValues) => {
   try {
     console.log("Tentando fazer login com valor:", values.telefone);
     
-    // Usar a função de login dinâmico do banco que já determina o campo correto
-    const { data, error } = await supabase.rpc('login_participante_dinamico' as any, {
-      p_valor_login: values.telefone, // O nome do campo continua 'telefone' mas o valor pode ser qualquer coisa
-      p_senha: values.senha
+    // Usar a Edge Function de login
+    const { data, error } = await supabase.functions.invoke('login-participante', {
+      body: {
+        valor_login: values.telefone,
+        senha: values.senha
+      }
     });
 
     if (error) {
@@ -33,7 +35,7 @@ export const loginParticipante = async (values: LoginFormValues) => {
       return { success: false };
     }
 
-    const participante = result.participante;
+    const participante = result.data;
     
     // Salvar dados do participante no localStorage
     localStorage.setItem("participanteId", participante.id);

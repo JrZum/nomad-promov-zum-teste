@@ -27,9 +27,8 @@ const LoginMethodConfiguration = () => {
   const loadConfiguration = async () => {
     setIsLoading(true);
     try {
-      // Use direct query to configuracao_login table through raw SQL
-      const { data, error } = await supabase
-        .rpc('obter_configuracao_login' as any);
+      // Usar Edge Function para obter configuração
+      const { data, error } = await supabase.functions.invoke('configuracao-login');
 
       if (error) {
         console.error("Erro ao carregar configuração:", error);
@@ -60,8 +59,8 @@ const LoginMethodConfiguration = () => {
   const saveConfiguration = async () => {
     setIsSaving(true);
     try {
-      const { data, error } = await supabase.rpc('salvar_configuracao_login' as any, {
-        p_metodo_login: loginMethod
+      const { data, error } = await supabase.functions.invoke('configuracao-login', {
+        body: { metodo_login: loginMethod }
       });
 
       if (error) {

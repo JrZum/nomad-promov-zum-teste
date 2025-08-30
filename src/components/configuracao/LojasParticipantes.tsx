@@ -49,19 +49,22 @@ const LojasParticipantes = () => {
   const { data: lojas = [], isLoading } = useQuery({
     queryKey: ['lojas-participantes'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('obter_todas_lojas' as any);
+      const { data, error } = await supabase.functions.invoke('lojas');
       if (error) throw error;
-      return (data as unknown) as Loja[];
+      return data.lojas || [];
     }
   });
 
   // Mutation para cadastrar nova loja
   const cadastrarLojaMutation = useMutation({
     mutationFn: async (dadosLoja: typeof formData) => {
-      const { data, error } = await supabase.rpc('cadastrar_loja' as any, {
-        p_nome_loja: dadosLoja.nome_loja,
-        p_identificador_url: dadosLoja.identificador_url,
-        p_descricao: dadosLoja.descricao
+      const { data, error } = await supabase.functions.invoke('lojas', {
+        body: {
+          action: 'cadastrar',
+          nome_loja: dadosLoja.nome_loja,
+          identificador_url: dadosLoja.identificador_url,
+          descricao: dadosLoja.descricao
+        }
       });
       if (error) throw error;
       return (data as unknown) as FunctionResult;
@@ -88,9 +91,12 @@ const LojasParticipantes = () => {
   // Mutation para alterar status da loja
   const alterarStatusMutation = useMutation({
     mutationFn: async ({ id, ativa }: { id: string; ativa: boolean }) => {
-      const { data, error } = await supabase.rpc('alterar_status_loja' as any, {
-        p_loja_id: id,
-        p_ativa: ativa
+      const { data, error } = await supabase.functions.invoke('lojas', {
+        body: {
+          action: 'status',
+          loja_id: id,
+          ativa: ativa
+        }
       });
       if (error) throw error;
       return (data as unknown) as FunctionResult;

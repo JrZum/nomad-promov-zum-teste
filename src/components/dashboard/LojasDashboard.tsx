@@ -29,10 +29,9 @@ const LojasDashboard = () => {
   const { data: lojas, isLoading: loadingLojas } = useQuery({
     queryKey: ["lojas-dashboard"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('obter_todas_lojas' as any);
+      const { data, error } = await supabase.functions.invoke('lojas');
       if (error) throw error;
-      const result = data as any;
-      return (result?.lojas as Loja[]) || [];
+      return data.lojas || [];
     }
   });
 

@@ -50,10 +50,12 @@ export const numberGenerationService = {
       const novosNumeros = generateUniqueRandomNumbers(quantidade, maxNumber, existingSet);
       console.log('Novos números gerados:', novosNumeros);
 
-      // 4. Usar a função simplificada do banco para inserir
-      const { data, error } = await supabase.rpc('gerar_numeros_sorte' as any, {
-        p_documento: cpf_cnpj,
-        p_numeros: novosNumeros
+      // 4. Usar a Edge Function para inserir números
+      const { data, error } = await supabase.functions.invoke('gerar-numeros', {
+        body: {
+          documento: cpf_cnpj,
+          numeros: novosNumeros
+        }
       });
 
       if (error) {
