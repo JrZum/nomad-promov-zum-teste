@@ -54,6 +54,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS gerar_numeros_sorte(text, integer[]);
+DROP FUNCTION IF EXISTS gerar_numeros_sorte(text, text);
+DROP FUNCTION IF EXISTS gerar_numeros_sorte;
+
 CREATE OR REPLACE FUNCTION gerar_numeros_sorte(
   p_documento TEXT,
   p_numeros INTEGER[]
