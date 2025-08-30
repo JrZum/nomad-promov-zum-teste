@@ -48,28 +48,40 @@ const RegisterForm = () => {
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
+    console.log("=== ONSUBMIT INICIADO ===");
+    console.log("Valores do formulário:", values);
+    
     setIsLoading(true);
     setErrorMessage(null);
     
-    const result = await registerParticipant(values, lojaIdentificador || undefined);
-    
-    if (result.success) {
-      // Resetar formulário
-      form.reset();
+    try {
+      console.log("Chamando registerParticipant...");
+      const result = await registerParticipant(values, lojaIdentificador || undefined);
+      console.log("Resultado recebido:", result);
       
-      // Mostrar popup de sucesso
-      setShowSuccessDialog(true);
-      
-      // Redirecionar para o login após 3 segundos
-      setTimeout(() => {
-        setShowSuccessDialog(false);
-        navigate('/auth', { state: { tab: 'login' } });
-      }, 3000);
-    } else {
-      setErrorMessage(result.error || null);
+      if (result.success) {
+        console.log("Cadastro bem-sucedido!");
+        // Resetar formulário
+        form.reset();
+        
+        // Mostrar popup de sucesso
+        setShowSuccessDialog(true);
+        
+        // Redirecionar para o login após 3 segundos
+        setTimeout(() => {
+          setShowSuccessDialog(false);
+          navigate('/auth', { state: { tab: 'login' } });
+        }, 3000);
+      } else {
+        console.log("Erro no cadastro:", result.error);
+        setErrorMessage(result.error || null);
+      }
+    } catch (error) {
+      console.error("Erro catch onSubmit:", error);
+      setErrorMessage("Erro inesperado no formulário. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleSuccessDialogClose = () => {
