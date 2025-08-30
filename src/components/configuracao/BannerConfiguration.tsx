@@ -179,7 +179,7 @@ const BannerConfiguration = () => {
           .limit(1)
           .maybeSingle();
         if (!error && data) {
-          setSiteTitle(((data as any)?.site_title as string) || "");
+          setSiteTitle(((data as any)?.titulo_site as string) || "");
         }
       } catch (e) {
         console.warn("Coluna site_title pode não existir ainda:", e);
@@ -202,13 +202,13 @@ const BannerConfiguration = () => {
         if (existingConfig) {
           const { error: updateError } = await supabase
             .from("configuracao_campanha")
-            .update({ site_title: title } as any)
+            .update({ titulo_site: title } as any)
             .eq("id", existingConfig.id);
           if (updateError) throw updateError;
         } else {
           const { error: insertError } = await supabase
             .from("configuracao_campanha")
-            .insert({ site_title: title, series_numericas: 1 } as any);
+            .insert({ titulo_site: title, series_numericas: 1 } as any);
           if (insertError) throw insertError;
         }
         return title;
