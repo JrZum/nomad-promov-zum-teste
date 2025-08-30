@@ -14,6 +14,7 @@ import { AdminAuthProvider } from "./context/AdminAuthContext";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import { ThemeProvider } from "@/components/theme-provider";
 import SiteTitleManager from "./components/SiteTitleManager";
+import FaviconManager from "./components/FaviconManager";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <SiteTitleManager />
+          <FaviconManager />
           <BrowserRouter>
             <Routes>
               {/* Redirecionar a página principal para o painel administrativo */}

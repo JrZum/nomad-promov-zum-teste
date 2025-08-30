@@ -133,7 +133,31 @@ const BannerConfiguration = () => {
         .from('banners')
         .getPublicUrl(fileName);
 
-      // Atualizar o favicon no index.html
+      // Salvar o favicon na configuração do banco
+      try {
+        const { data: existingConfig } = await supabase
+          .from("configuracao_campanha")
+          .select("*")
+          .limit(1)
+          .maybeSingle();
+
+        if (existingConfig) {
+          const { error: updateError } = await supabase
+            .from("configuracao_campanha")
+            .update({ favicon_url: publicUrl } as any)
+            .eq("id", existingConfig.id);
+          if (updateError) console.warn("Erro ao salvar favicon:", updateError);
+        } else {
+          const { error: insertError } = await supabase
+            .from("configuracao_campanha")
+            .insert({ favicon_url: publicUrl, series_numericas: 1 } as any);
+          if (insertError) console.warn("Erro ao salvar favicon:", insertError);
+        }
+      } catch (e) {
+        console.warn("Erro ao salvar favicon na configuração:", e);
+      }
+
+      // Atualizar o favicon no documento atual
       const faviconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
       if (faviconLink) {
         faviconLink.href = publicUrl;
@@ -168,9 +192,9 @@ const BannerConfiguration = () => {
     }
   });
 
-  // Carregar título atual na montagem
+  // Carregar título e favicon atuais na montagem
   useEffect(() => {
-    const loadTitle = async () => {
+    const loadConfig = async () => {
       try {
         const { data, error } = await supabase
           .from("configuracao_campanha")
@@ -180,12 +204,13 @@ const BannerConfiguration = () => {
           .maybeSingle();
         if (!error && data) {
           setSiteTitle(((data as any)?.titulo_site as string) || "");
+          setFaviconUrl(((data as any)?.favicon_url as string) || "");
         }
       } catch (e) {
-        console.warn("Coluna site_title pode não existir ainda:", e);
+        console.warn("Erro ao carregar configurações:", e);
       }
     };
-    loadTitle();
+    loadConfig();
   }, []);
 
   // Salvar título do site
