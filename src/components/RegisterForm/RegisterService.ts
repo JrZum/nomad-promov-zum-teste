@@ -28,17 +28,56 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
     if (error) {
       console.error("Erro na função de cadastro:", error);
       
-      // Tratar erro específico de CPF/CNPJ já cadastrado
-      if (error.message && error.message.includes('já está cadastrado')) {
-        return {
-          success: false,
-          error: "Este CPF/CNPJ já está cadastrado. Use um documento diferente."
-        };
+      // Tratar erros específicos com mensagens mais claras
+      if (error.message) {
+        const errorMessage = error.message.toLowerCase();
+        
+        if (errorMessage.includes('já está cadastrado') || errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
+          return {
+            success: false,
+            error: "Este CPF/CNPJ já está cadastrado no sistema. Por favor, use um documento diferente ou faça login se já possui uma conta."
+          };
+        }
+        
+        if (errorMessage.includes('email') && (errorMessage.includes('duplicate') || errorMessage.includes('unique'))) {
+          return {
+            success: false,
+            error: "Este e-mail já está sendo usado por outra conta. Por favor, use um e-mail diferente ou faça login."
+          };
+        }
+        
+        if (errorMessage.includes('telefone') && (errorMessage.includes('duplicate') || errorMessage.includes('unique'))) {
+          return {
+            success: false,
+            error: "Este telefone já está cadastrado. Por favor, use um telefone diferente ou faça login se já possui uma conta."
+          };
+        }
+        
+        if (errorMessage.includes('required') || errorMessage.includes('obrigatório')) {
+          return {
+            success: false,
+            error: "Por favor, preencha todos os campos obrigatórios antes de continuar."
+          };
+        }
+        
+        if (errorMessage.includes('invalid') || errorMessage.includes('inválido')) {
+          return {
+            success: false,
+            error: "Alguns dados fornecidos são inválidos. Verifique se o CPF/CNPJ, e-mail e telefone estão corretos."
+          };
+        }
+        
+        if (errorMessage.includes('format') || errorMessage.includes('formato')) {
+          return {
+            success: false,
+            error: "Formato de dados incorreto. Verifique se todos os campos estão preenchidos corretamente."
+          };
+        }
       }
       
       return {
         success: false,
-        error: "Erro interno do sistema. Tente novamente."
+        error: "Erro interno do sistema. Por favor, verifique seus dados e tente novamente. Se o problema persistir, entre em contato com o suporte."
       };
     }
 
