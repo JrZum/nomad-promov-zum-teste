@@ -38,7 +38,14 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
     };
     console.log("Parâmetros RPC:", rpcParams);
     
-    const { data, error } = await supabase.rpc('cadastrar_participante', rpcParams);
+    // Configurar timeout de 10 segundos
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout na chamada do banco')), 10000)
+    );
+    
+    const rpcPromise = supabase.rpc('cadastrar_participante', rpcParams);
+    
+    const { data, error } = await Promise.race([rpcPromise, timeoutPromise]) as any;
     
     console.log("Resultado da chamada RPC:");
     console.log("Data:", data);

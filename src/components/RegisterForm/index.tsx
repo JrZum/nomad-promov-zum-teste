@@ -48,6 +48,7 @@ const RegisterForm = () => {
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
+    console.log("FORM SUBMIT TRIGGERED!!!"); // Log simples para debug
     console.log("=== ONSUBMIT INICIADO ===");
     console.log("Valores do formulário:", values);
     
