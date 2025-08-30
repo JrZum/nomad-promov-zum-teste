@@ -6,15 +6,28 @@ import { Link } from "react-router-dom";
 import ConfiguracaoCampanha from "@/components/ConfiguracaoCampanha";
 import Dashboard from "@/components/Dashboard";
 import ParticipanteDashboard from "@/components/ParticipanteDashboard";
+import { testSingleFunction } from "@/utils/testEdgeFunctions";
 
 const Index = () => {
+  
+  const handleTestEdgeFunction = async () => {
+    console.log("=== TESTE RÁPIDO EDGE FUNCTIONS ===");
+    await testSingleFunction('configuracao-login');
+  };
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-center mb-8">
         <img alt="Logo Let's Eat" className="h-24" src="https://letseat.com.br/images/logo.png" />
       </div>
       
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-2 mb-4">
+        <Button 
+          variant="secondary" 
+          onClick={handleTestEdgeFunction}
+          size="sm"
+        >
+          🧪 Testar Edge Functions
+        </Button>
         <Link to="/auth">
           <Button variant="outline">Área do Participante</Button>
         </Link>
