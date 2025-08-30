@@ -5,10 +5,20 @@ import { RegisterFormValues } from "./schema";
 
 export const registerParticipant = async (values: RegisterFormValues, lojaIdentificador?: string) => {
   try {
-    console.log("Tentando cadastrar participante...", { nome: values.nome, loja: lojaIdentificador });
+    console.log("=== INÍCIO DO CADASTRO ===");
+    console.log("Dados recebidos:", {
+      nome: values.nome,
+      email: values.email,
+      telefone: values.telefone,
+      documento: values.documento,
+      cidade: values.cidade,
+      uf: values.uf,
+      loja: lojaIdentificador
+    });
     
     // Usar a função RPC existente no banco
-    const { data, error } = await supabase.rpc('cadastrar_participante', {
+    console.log("Chamando função cadastrar_participante com os parâmetros:");
+    const rpcParams = {
       p_nome: values.nome,
       p_genero: 'Não informado', // Campo obrigatório na função
       p_email: values.email,
@@ -23,7 +33,14 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
       p_uf: values.uf,
       p_senha: values.senha,
       p_data_cadastro: new Date().toISOString()
-    });
+    };
+    console.log("Parâmetros RPC:", rpcParams);
+    
+    const { data, error } = await supabase.rpc('cadastrar_participante', rpcParams);
+    
+    console.log("Resultado da chamada RPC:");
+    console.log("Data:", data);
+    console.log("Error:", error);
 
     if (error) {
       console.error("Erro na função de cadastro:", error);
@@ -82,11 +99,13 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
     }
 
     const result = data as any;
-    if (!result.success) {
-      console.log("Falha no cadastro:", result.error);
+    console.log("Verificando resultado:", result);
+    
+    if (!result || result.success === false) {
+      console.log("Falha no cadastro retornada pela função:", result?.error || "Resultado inválido");
       return {
         success: false,
-        error: result.error
+        error: result?.error || "Erro no processamento do cadastro."
       };
     }
 
