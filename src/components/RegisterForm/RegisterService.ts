@@ -18,21 +18,23 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
     
     // Usar a função RPC existente no banco
     console.log("Chamando função cadastrar_participante com os parâmetros:");
+    // A função espera os parâmetros nesta ordem exata:
+    // p_documento, p_nome, p_email, p_telefone, p_genero, p_idade, p_rua, p_numero, p_complemento, p_bairro, p_cidade, p_cep, p_uf, p_senha
     const rpcParams = {
+      p_documento: values.documento,
       p_nome: values.nome,
-      p_genero: 'Não informado', // Campo obrigatório na função
       p_email: values.email,
       p_telefone: values.telefone,
-      p_documento: values.documento,
+      p_genero: 'Não informado',
+      p_idade: '18', // Data de nascimento ou idade como string
       p_rua: values.rua,
       p_numero: values.numero,
+      p_complemento: values.complemento || '',
       p_bairro: values.bairro,
-      p_complemento: values.complemento || null,
-      p_cep: values.cep,
       p_cidade: values.cidade,
+      p_cep: values.cep,
       p_uf: values.uf,
-      p_senha: values.senha,
-      p_idade: 18 // Campo obrigatório - usando valor padrão
+      p_senha: values.senha
     };
     console.log("Parâmetros RPC:", rpcParams);
     
