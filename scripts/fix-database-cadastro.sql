@@ -4,8 +4,9 @@
 -- 1. Habilitar extensão pgcrypto (necessária para gen_salt e crypt)
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- 2. Verificar se a função cadastrar_participante existe e recriar se necessário
+-- 2. Remover funções existentes para evitar conflitos de tipo de retorno
 DROP FUNCTION IF EXISTS public.cadastrar_participante;
+DROP FUNCTION IF EXISTS public.login_participante_dinamico(TEXT, TEXT);
 
 -- 3. Recriar a função cadastrar_participante com os parâmetros corretos
 CREATE OR REPLACE FUNCTION public.cadastrar_participante(
