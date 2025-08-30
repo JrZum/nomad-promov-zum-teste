@@ -6,16 +6,14 @@ export const loginParticipante = async (values: LoginFormValues) => {
   try {
     console.log("Tentando fazer login com valor:", values.telefone);
     
-    // Usar a Edge Function de login
-    const { data, error } = await supabase.functions.invoke('login-participante', {
-      body: {
-        valor_login: values.telefone,
-        senha: values.senha
-      }
+    // Usar a Database Function de login
+    const { data, error } = await supabase.rpc('login_participante_dinamico', {
+      p_valor_login: values.telefone,
+      p_senha: values.senha
     });
 
     if (error) {
-      console.error("Erro na função de login:", error);
+      console.error("Erro na Database Function de login:", error);
       toast({
         title: "Erro ao fazer login",
         description: "Erro interno do sistema. Tente novamente.",

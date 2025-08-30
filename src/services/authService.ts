@@ -26,37 +26,35 @@ export interface RegisterResponse {
 export const authService = {
   async registerParticipant(data: RegisterData): Promise<RegisterResponse> {
     try {
-      console.log("=== CHAMANDO EDGE FUNCTION ===");
+      console.log("=== CHAMANDO DATABASE FUNCTION ===");
       console.log("Dados para envio:", {
         ...data,
         senha: "[REDACTED]"
       });
 
-      // Chamar a Edge Function
-      const { data: response, error } = await supabase.functions.invoke('cadastro-participante', {
-        body: {
-          nome: data.nome,
-          genero: data.genero || 'Não informado',
-          email: data.email,
-          telefone: data.telefone,
-          documento: data.documento,
-          rua: data.rua,
-          numero: data.numero,
-          bairro: data.bairro,
-          complemento: data.complemento || '',
-          cep: data.cep,
-          cidade: data.cidade,
-          uf: data.uf,
-          senha: data.senha,
-          idade: data.idade || '18'
-        }
+      // Chamar a Database Function via RPC
+      const { data: response, error } = await supabase.rpc('cadastrar_participante_completo', {
+        p_nome: data.nome,
+        p_genero: data.genero || 'Não informado',
+        p_email: data.email,
+        p_telefone: data.telefone,
+        p_documento: data.documento,
+        p_rua: data.rua,
+        p_numero: data.numero,
+        p_bairro: data.bairro,
+        p_complemento: data.complemento || '',
+        p_cep: data.cep,
+        p_cidade: data.cidade,
+        p_uf: data.uf,
+        p_senha: data.senha,
+        p_idade: data.idade || '18'
       });
 
-      console.log("Resposta da Edge Function:", response);
-      console.log("Erro da Edge Function:", error);
+      console.log("Resposta da Database Function:", response);
+      console.log("Erro da Database Function:", error);
 
       if (error) {
-        console.error("Erro na Edge Function:", error);
+        console.error("Erro na Database Function:", error);
         return {
           success: false,
           error: error.message || "Erro na comunicação com o servidor"
@@ -70,15 +68,15 @@ export const authService = {
         };
       }
 
-      // A Edge Function retorna um objeto com success, error, etc.
+      // A Database Function retorna um objeto com success, error, etc.
       if (response.success) {
-        console.log("Cadastro realizado com sucesso via Edge Function!");
+        console.log("Cadastro realizado com sucesso via Database Function!");
         return {
           success: true,
           data: response.data
         };
       } else {
-        console.log("Erro retornado pela Edge Function:", response.error);
+        console.log("Erro retornado pela Database Function:", response.error);
         return {
           success: false,
           error: response.error || "Erro no processamento do cadastro"

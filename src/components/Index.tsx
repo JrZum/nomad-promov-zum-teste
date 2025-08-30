@@ -6,13 +6,13 @@ import { Link } from "react-router-dom";
 import ConfiguracaoCampanha from "@/components/ConfiguracaoCampanha";
 import Dashboard from "@/components/Dashboard";
 import ParticipanteDashboard from "@/components/ParticipanteDashboard";
-import { testSingleFunction } from "@/utils/testEdgeFunctions";
+
 
 const Index = () => {
   
-  const handleTestEdgeFunction = async () => {
-    console.log("=== TESTE RÁPIDO EDGE FUNCTIONS ===");
-    await testSingleFunction('configuracao-login');
+  const handleTestDatabaseFunction = async () => {
+    console.log("=== TESTE RÁPIDO DATABASE FUNCTIONS ===");
+    console.log("Edge Functions foram removidas - usando Database Functions agora!");
   };
   return (
     <div className="container mx-auto p-6">
@@ -23,10 +23,10 @@ const Index = () => {
       <div className="flex justify-end gap-2 mb-4">
         <Button 
           variant="secondary" 
-          onClick={handleTestEdgeFunction}
+          onClick={handleTestDatabaseFunction}
           size="sm"
         >
-          🧪 Testar Edge Functions
+          🧪 Database Functions
         </Button>
         <Link to="/auth">
           <Button variant="outline">Área do Participante</Button>

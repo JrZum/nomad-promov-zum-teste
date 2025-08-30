@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { generateUniqueRandomNumbers } from "@/lib/utils/generateNumbers";
 
@@ -50,16 +49,14 @@ export const numberGenerationService = {
       const novosNumeros = generateUniqueRandomNumbers(quantidade, maxNumber, existingSet);
       console.log('Novos números gerados:', novosNumeros);
 
-      // 4. Usar a Edge Function para inserir números
-      const { data, error } = await supabase.functions.invoke('gerar-numeros', {
-        body: {
-          documento: cpf_cnpj,
-          numeros: novosNumeros
-        }
+      // 4. Usar a Database Function para inserir números
+      const { data, error } = await supabase.rpc('gerar_numeros_participante', {
+        p_documento: cpf_cnpj,
+        p_numeros: novosNumeros
       });
 
       if (error) {
-        console.error('Erro na função do banco:', error);
+        console.error('Erro na Database Function:', error);
         throw error;
       }
 
@@ -72,7 +69,7 @@ export const numberGenerationService = {
         };
       }
 
-      console.log('Números inseridos com sucesso via função do banco');
+      console.log('Números inseridos com sucesso via Database Function');
 
       return {
         success: true,
