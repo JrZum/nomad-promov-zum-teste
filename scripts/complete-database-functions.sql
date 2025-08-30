@@ -1,14 +1,5 @@
--- ===============================================
--- COMPLETE DATABASE FUNCTIONS MIGRATION SCRIPT
--- This script replaces all Edge Functions with Database Functions
--- ===============================================
-
--- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- ===============================================
--- 1. PARTICIPANT REGISTRATION FUNCTION
--- ===============================================
 CREATE OR REPLACE FUNCTION public.cadastrar_participante_completo(
   p_nome TEXT,
   p_genero TEXT,
@@ -32,7 +23,6 @@ DECLARE
   novo_participante JSONB;
   participante_id UUID;
 BEGIN
-  -- Verificar se já existe um participante com este documento
   IF EXISTS (
     SELECT 1 
     FROM public.participantes 
@@ -44,7 +34,6 @@ BEGIN
     );
   END IF;
 
-  -- Verificar se a loja existe e está ativa (se informada)
   IF p_loja_origem IS NOT NULL THEN
     IF NOT EXISTS (
       SELECT 1 
@@ -58,7 +47,6 @@ BEGIN
     END IF;
   END IF;
 
-  -- Inserir participante
   INSERT INTO public.participantes(
     nome, genero, email, telefone, documento, 
     rua, numero, bairro, complemento, cep, 
@@ -85,7 +73,6 @@ BEGIN
   )
   RETURNING id INTO participante_id;
   
-  -- Buscar o participante inserido (sem retornar a senha)
   SELECT jsonb_build_object(
     'success', true,
     'data', jsonb_build_object(
@@ -103,9 +90,6 @@ BEGIN
 END;
 $$;
 
--- ===============================================
--- 2. DYNAMIC LOGIN FUNCTION (already exists but ensuring it's current)
--- ===============================================
 CREATE OR REPLACE FUNCTION public.login_participante_dinamico(
   p_valor_login TEXT,
   p_senha TEXT
@@ -117,10 +101,8 @@ DECLARE
   metodo_login TEXT;
   campo_busca TEXT;
 BEGIN
-  -- Obter configuração ativa de login
   SELECT obter_configuracao_login() INTO metodo_login;
   
-  -- Determinar campo de busca baseado na configuração
   CASE metodo_login
     WHEN 'telefone', 'celular' THEN
       campo_busca := 'telefone';
@@ -129,10 +111,9 @@ BEGIN
     WHEN 'email' THEN
       campo_busca := 'email';
     ELSE
-      campo_busca := 'telefone'; -- fallback
+      campo_busca := 'telefone';
   END CASE;
   
-  -- Buscar participante baseado no campo configurado
   IF campo_busca = 'telefone' THEN
     SELECT * INTO participante 
     FROM public.participantes 
@@ -147,7 +128,6 @@ BEGIN
     WHERE email = p_valor_login;
   END IF;
   
-  -- Verificar se participante foi encontrado
   IF participante IS NULL THEN
     RETURN jsonb_build_object(
       'success', false,
@@ -155,7 +135,6 @@ BEGIN
     );
   END IF;
   
-  -- Verificar senha
   IF participante.senha != p_senha THEN
     RETURN jsonb_build_object(
       'success', false,
@@ -163,7 +142,6 @@ BEGIN
     );
   END IF;
   
-  -- Login bem-sucedido
   RETURN jsonb_build_object(
     'success', true,
     'data', jsonb_build_object(
@@ -177,9 +155,6 @@ BEGIN
 END;
 $$;
 
--- ===============================================
--- 3. NUMBER GENERATION FUNCTION
--- ===============================================
 CREATE OR REPLACE FUNCTION public.gerar_numeros_participante(
   p_documento TEXT,
   p_numeros INTEGER[]
@@ -191,7 +166,6 @@ DECLARE
   numeros_inseridos INTEGER := 0;
   numero INTEGER;
 BEGIN
-  -- Verificar se o participante existe
   SELECT EXISTS(
     SELECT 1 FROM public.participantes WHERE documento = p_documento
   ) INTO participante_existe;
@@ -203,7 +177,6 @@ BEGIN
     );
   END IF;
   
-  -- Inserir cada número
   FOREACH numero IN ARRAY p_numeros
   LOOP
     BEGIN
@@ -212,12 +185,10 @@ BEGIN
       
       numeros_inseridos := numeros_inseridos + 1;
     EXCEPTION WHEN unique_violation THEN
-      -- Ignorar números duplicados
       CONTINUE;
     END;
   END LOOP;
   
-  -- Atualizar contador no participante (trigger já faz isso, mas garantindo)
   UPDATE public.participantes 
   SET quantidade_numeros = (
     SELECT COUNT(*) FROM public.numeros_sorte WHERE documento = p_documento
@@ -234,9 +205,6 @@ BEGIN
 END;
 $$;
 
--- ===============================================
--- 4. LOGIN CONFIGURATION FUNCTIONS (ensuring they exist)
--- ===============================================
 CREATE OR REPLACE FUNCTION public.salvar_configuracao_login(
   p_metodo_login TEXT
 ) RETURNS JSONB
@@ -245,10 +213,8 @@ AS $$
 DECLARE
   config_id UUID;
 BEGIN
-  -- Desativar configurações anteriores
   UPDATE public.configuracao_login SET ativo = false;
   
-  -- Inserir nova configuração
   INSERT INTO public.configuracao_login (metodo_login, ativo, created_at, updated_at)
   VALUES (p_metodo_login, true, now(), now())
   RETURNING id INTO config_id;
@@ -274,7 +240,6 @@ BEGIN
   ORDER BY created_at DESC
   LIMIT 1;
   
-  -- Se não houver configuração ativa, retorna celular como padrão
   IF metodo IS NULL THEN
     metodo := 'celular';
   END IF;
@@ -314,9 +279,6 @@ BEGIN
 END;
 $$;
 
--- ===============================================
--- 5. STORE MANAGEMENT FUNCTIONS
--- ===============================================
 CREATE OR REPLACE FUNCTION public.listar_lojas_participantes()
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER
@@ -361,7 +323,6 @@ AS $$
 DECLARE
   loja_id UUID;
 BEGIN
-  -- Verificar se já existe loja com este identificador
   IF EXISTS (
     SELECT 1 FROM public.lojas_participantes 
     WHERE identificador_url = p_identificador_url
@@ -372,7 +333,6 @@ BEGIN
     );
   END IF;
   
-  -- Inserir nova loja
   INSERT INTO public.lojas_participantes (
     nome_loja, identificador_url, descricao, ativa, created_at, updated_at
   )
@@ -400,7 +360,6 @@ CREATE OR REPLACE FUNCTION public.alterar_status_loja_participante(
 LANGUAGE plpgsql SECURITY DEFINER
 AS $$
 BEGIN
-  -- Verificar se a loja existe
   IF NOT EXISTS (
     SELECT 1 FROM public.lojas_participantes WHERE id = p_loja_id
   ) THEN
@@ -410,7 +369,6 @@ BEGIN
     );
   END IF;
   
-  -- Atualizar status
   UPDATE public.lojas_participantes
   SET ativa = p_ativa, updated_at = now()
   WHERE id = p_loja_id;
@@ -425,9 +383,6 @@ BEGIN
 END;
 $$;
 
--- ===============================================
--- 6. ADMIN AUTHENTICATION FUNCTIONS
--- ===============================================
 CREATE OR REPLACE FUNCTION public.admin_login_completo(
   p_email TEXT,
   p_password TEXT
@@ -438,7 +393,6 @@ DECLARE
   admin_record RECORD;
   token TEXT;
 BEGIN
-  -- Verificar credenciais
   SELECT * INTO admin_record FROM public.admins 
   WHERE email = p_email AND password = p_password;
   
@@ -449,10 +403,8 @@ BEGIN
     );
   END IF;
   
-  -- Gerar token
   token := encode(digest(admin_record.id::text || now()::text, 'sha256'), 'hex');
   
-  -- Salvar sessão
   INSERT INTO admin_sessions (admin_id, token, expires_at)
   VALUES (
     admin_record.id, 
@@ -480,7 +432,6 @@ AS $$
 DECLARE
   session_record RECORD;
 BEGIN
-  -- Verificar token
   SELECT s.*, a.email, a.name INTO session_record 
   FROM admin_sessions s
   JOIN public.admins a ON a.id = s.admin_id
@@ -504,9 +455,6 @@ BEGIN
 END;
 $$;
 
--- ===============================================
--- GRANT PERMISSIONS TO ANONYMOUS AND AUTHENTICATED USERS
--- ===============================================
 GRANT EXECUTE ON FUNCTION public.cadastrar_participante_completo TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.login_participante_dinamico TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.gerar_numeros_participante TO anon, authenticated;
@@ -519,20 +467,6 @@ GRANT EXECUTE ON FUNCTION public.alterar_status_loja_participante TO anon, authe
 GRANT EXECUTE ON FUNCTION public.admin_login_completo TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.verificar_admin_token TO anon, authenticated;
 
--- ===============================================
--- COMMENTS FOR DOCUMENTATION
--- ===============================================
-COMMENT ON FUNCTION public.cadastrar_participante_completo IS 'Cadastrar novo participante com validação completa';
-COMMENT ON FUNCTION public.login_participante_dinamico IS 'Login dinâmico baseado na configuração ativa';
-COMMENT ON FUNCTION public.gerar_numeros_participante IS 'Gerar números da sorte para um participante';
-COMMENT ON FUNCTION public.salvar_configuracao_login IS 'Salvar configuração do método de login';
-COMMENT ON FUNCTION public.obter_configuracao_login_completa IS 'Obter configuração completa de login';
-COMMENT ON FUNCTION public.listar_lojas_participantes IS 'Listar todas as lojas com estatísticas';
-COMMENT ON FUNCTION public.admin_login_completo IS 'Autenticação completa de administrador';
-
--- ===============================================
--- VERIFICATION
--- ===============================================
 SELECT 'Database Functions criadas com sucesso!' as status,
        COUNT(*) as total_functions
 FROM information_schema.routines 
