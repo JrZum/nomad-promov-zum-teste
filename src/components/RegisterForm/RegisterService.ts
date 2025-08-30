@@ -32,7 +32,7 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
       p_cidade: values.cidade,
       p_uf: values.uf,
       p_senha: values.senha,
-      p_data_cadastro: new Date().toISOString()
+      p_idade: 18 // Campo obrigatório - usando valor padrão
     };
     console.log("Parâmetros RPC:", rpcParams);
     
