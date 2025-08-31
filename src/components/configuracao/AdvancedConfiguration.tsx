@@ -5,6 +5,7 @@ import AlgorithmConfiguration from "./AlgorithmConfiguration";
 import NumberRangeConfiguration from "./NumberRangeConfiguration";
 import LimitConfiguration from "./LimitConfiguration";
 import PatternConfiguration from "./PatternConfiguration";
+import SeriesVisualization from "./SeriesVisualization";
 
 const AdvancedConfiguration = () => {
   return (
@@ -18,6 +19,8 @@ const AdvancedConfiguration = () => {
         <LimitConfiguration />
         <PatternConfiguration />
       </div>
+
+      <SeriesVisualization />
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { generateUniqueRandomNumbers } from "@/lib/utils/generateNumbers";
 
 interface GenerateNumbersParams {
   cpf_cnpj: string;
@@ -11,77 +10,106 @@ interface GenerateNumbersResult {
   numeros?: number[];
   quantidade_gerada?: number;
   error?: string;
+  algoritmo_usado?: string;
+}
+
+interface AlgorithmConfig {
+  algorithm: string;
+  sequential_start?: number;
+  timestamp_multiplier?: number;
+  enable_distribution_guarantee?: boolean;
+}
+
+// Load algorithm configuration from localStorage
+function loadAlgorithmConfig(): AlgorithmConfig {
+  try {
+    const savedConfig = localStorage.getItem('algorithmConfig');
+    if (savedConfig) {
+      return JSON.parse(savedConfig);
+    }
+  } catch (error) {
+    console.warn("Erro ao carregar configuração do algoritmo:", error);
+  }
+  
+  // Default configuration
+  return {
+    algorithm: 'random',
+    sequential_start: 0,
+    timestamp_multiplier: 1000,
+    enable_distribution_guarantee: false
+  };
 }
 
 export const numberGenerationService = {
   async generateNumbers({ cpf_cnpj, quantidade }: GenerateNumbersParams): Promise<GenerateNumbersResult> {
     try {
-      console.log('Iniciando geração de números:', { cpf_cnpj, quantidade });
-
-      // 1. Buscar configuração da campanha para determinar o range máximo
-      const { data: configuracao, error: configError } = await supabase
-        .from('configuracao_campanha')
-        .select('series_numericas')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (configError && configError.code !== "PGRST116") {
-        throw configError;
+      console.log("Iniciando geração de números para:", cpf_cnpj, "quantidade:", quantidade);
+      
+      // Load algorithm configuration
+      const algorithmConfig = loadAlgorithmConfig();
+      console.log("Configuração do algoritmo carregada:", algorithmConfig);
+      
+      // Verificar se há séries ativas
+      const { data: seriesResult, error: seriesError } = await supabase
+        .rpc("obter_series_ativas");
+      
+      if (seriesError) {
+        console.error("Erro ao buscar séries ativas:", seriesError);
+        return {
+          success: false,
+          error: "Erro ao verificar séries ativas"
+        };
       }
-
-      const seriesNumericas = configuracao?.series_numericas || 1;
-      const maxNumber = seriesNumericas * 100000;
-
-      console.log('Configuração da campanha:', { seriesNumericas, maxNumber });
-
-      // 2. Buscar números existentes para evitar duplicatas
-      const { data: numerosExistentes, error: numerosError } = await supabase
-        .from('numeros_sorte')
-        .select('numero');
-
-      if (numerosError) throw numerosError;
-
-      const existingSet = new Set(numerosExistentes?.map(n => n.numero) || []);
-      console.log('Números existentes encontrados:', existingSet.size);
-
-      // 3. Gerar novos números únicos
-      const novosNumeros = generateUniqueRandomNumbers(quantidade, maxNumber, existingSet);
-      console.log('Novos números gerados:', novosNumeros);
-
-      // 4. Usar a Database Function para inserir números
-      const { data, error } = await supabase.rpc('gerar_numeros_participante', {
-        p_documento: cpf_cnpj,
-        p_numeros: novosNumeros
-      });
-
-      if (error) {
-        console.error('Erro na Database Function:', error);
-        throw error;
+      
+      if (!seriesResult.success || !seriesResult.series?.length) {
+        return {
+          success: false,
+          error: "Nenhuma série ativa encontrada. Configure as séries primeiro."
+        };
       }
-
-      const result = data as any;
+      
+      console.log("Séries ativas encontradas:", seriesResult.series.length);
+      
+      // Chamar a função RPC do Supabase com configuração do algoritmo
+      const { data: result, error: rpcError } = await supabase
+        .rpc('gerar_numeros_participante', {
+          p_cpf_cnpj: cpf_cnpj,
+          p_quantidade: quantidade,
+          p_algoritmo: algorithmConfig.algorithm,
+          p_sequential_start: algorithmConfig.sequential_start,
+          p_timestamp_multiplier: algorithmConfig.timestamp_multiplier,
+          p_enable_distribution_guarantee: algorithmConfig.enable_distribution_guarantee
+        });
+      
+      if (rpcError) {
+        console.error("Erro na função RPC:", rpcError);
+        return {
+          success: false,
+          error: "Erro ao gerar números no servidor"
+        };
+      }
+      
+      console.log("Resultado da função RPC:", result);
       
       if (!result.success) {
         return {
           success: false,
-          error: result.error
+          error: result.error || "Erro desconhecido ao gerar números"
         };
       }
-
-      console.log('Números inseridos com sucesso via Database Function');
-
+      
       return {
         success: true,
-        numeros: novosNumeros,
-        quantidade_gerada: result.numeros_inseridos
+        numeros: result.numeros,
+        quantidade_gerada: result.quantidade_gerada,
+        algoritmo_usado: result.algoritmo_usado
       };
-
+      
     } catch (error) {
-      console.error('Erro no serviço de geração de números:', error);
+      console.error("Erro no serviço de geração de números:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: "Erro interno do serviço"
       };
     }
   }
