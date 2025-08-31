@@ -471,4 +471,4 @@ SELECT 'Database Functions criadas com sucesso!' as status,
        COUNT(*) as total_functions
 FROM information_schema.routines 
 WHERE routine_schema = 'public' 
-AND routine_name LIKE '%participante%' OR routine_name LIKE '%login%' OR routine_name LIKE '%loja%' OR routine_name LIKE '%admin%';
+AND (routine_name LIKE '%participante%' OR routine_name LIKE '%login%' OR routine_name LIKE '%loja%' OR routine_name LIKE '%admin%');
