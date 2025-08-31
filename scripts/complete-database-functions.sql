@@ -1,5 +1,17 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+DROP FUNCTION IF EXISTS public.cadastrar_participante_completo(TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT);
+DROP FUNCTION IF EXISTS public.login_participante_dinamico(TEXT,TEXT);
+DROP FUNCTION IF EXISTS public.gerar_numeros_participante(TEXT,INTEGER[]);
+DROP FUNCTION IF EXISTS public.salvar_configuracao_login(TEXT);
+DROP FUNCTION IF EXISTS public.obter_configuracao_login();
+DROP FUNCTION IF EXISTS public.obter_configuracao_login_completa();
+DROP FUNCTION IF EXISTS public.listar_lojas_participantes();
+DROP FUNCTION IF EXISTS public.cadastrar_loja_participante(TEXT,TEXT,TEXT);
+DROP FUNCTION IF EXISTS public.alterar_status_loja_participante(UUID,BOOLEAN);
+DROP FUNCTION IF EXISTS public.admin_login_completo(TEXT,TEXT);
+DROP FUNCTION IF EXISTS public.verificar_admin_token(TEXT);
+
 CREATE OR REPLACE FUNCTION public.cadastrar_participante_completo(
   p_nome TEXT,
   p_genero TEXT,
