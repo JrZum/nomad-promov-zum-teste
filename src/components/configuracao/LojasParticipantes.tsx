@@ -46,31 +46,50 @@ const LojasParticipantes = () => {
   const queryClient = useQueryClient();
 
   // Buscar todas as lojas
-  const { data: lojas = [], isLoading } = useQuery({
+  const { data: lojas = [], isLoading, error: queryError } = useQuery({
     queryKey: ['lojas-participantes'],
     queryFn: async () => {
+      console.log('Buscando lojas participantes...');
       const { data, error } = await supabase.rpc('listar_lojas_participantes');
-      if (error) throw error;
-      return data?.data || [];
+      
+      if (error) {
+        console.error('Erro ao buscar lojas:', error);
+        throw new Error(`Erro na função RPC: ${error.message}`);
+      }
+      
+      console.log('Lojas encontradas:', data);
+      return data || [];
+    },
+    retry: (failureCount, error) => {
+      console.log(`Tentativa ${failureCount} falhou:`, error);
+      return failureCount < 2;
     }
   });
 
   // Mutation para cadastrar nova loja
   const cadastrarLojaMutation = useMutation({
     mutationFn: async (dadosLoja: typeof formData) => {
+      console.log('Cadastrando loja:', dadosLoja);
       const { data, error } = await supabase.rpc('cadastrar_loja_participante', {
         p_nome_loja: dadosLoja.nome_loja,
         p_identificador_url: dadosLoja.identificador_url,
-        p_descricao: dadosLoja.descricao
+        p_descricao: dadosLoja.descricao || null
       });
-      if (error) throw error;
-      return (data as unknown) as FunctionResult;
+      
+      if (error) {
+        console.error('Erro ao cadastrar loja:', error);
+        throw new Error(`Erro na função RPC: ${error.message}`);
+      }
+      
+      console.log('Resposta do cadastro:', data);
+      return data as FunctionResult;
     },
     onSuccess: (result) => {
+      console.log('Resultado do cadastro:', result);
       if (result.success) {
         toast({
           title: "Sucesso",
-          description: result.message
+          description: "Loja cadastrada com sucesso!"
         });
         setFormData({ nome_loja: '', identificador_url: '', descricao: '' });
         setIsDialogOpen(false);
@@ -78,31 +97,61 @@ const LojasParticipantes = () => {
       } else {
         toast({
           title: "Erro",
-          description: result.error,
+          description: result.error || "Erro desconhecido ao cadastrar loja",
           variant: "destructive"
         });
       }
+    },
+    onError: (error) => {
+      console.error('Erro na mutation:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao cadastrar loja. Verifique se as funções do banco estão configuradas.",
+        variant: "destructive"
+      });
     }
   });
 
   // Mutation para alterar status da loja
   const alterarStatusMutation = useMutation({
     mutationFn: async ({ id, ativa }: { id: string; ativa: boolean }) => {
+      console.log('Alterando status da loja:', { id, ativa });
       const { data, error } = await supabase.rpc('alterar_status_loja_participante', {
         p_loja_id: id,
         p_ativa: ativa
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error('Erro ao alterar status:', error);
+        throw new Error(`Erro na função RPC: ${error.message}`);
+      }
+      
+      console.log('Resposta do status:', data);
       return data;
     },
     onSuccess: (result) => {
+      console.log('Status alterado:', result);
       if (result.success) {
         toast({
           title: "Sucesso",
-          description: result.message
+          description: "Status da loja alterado com sucesso!"
         });
         queryClient.invalidateQueries({ queryKey: ['lojas-participantes'] });
+      } else {
+        toast({
+          title: "Erro",
+          description: result.error || "Erro ao alterar status",
+          variant: "destructive"
+        });
       }
+    },
+    onError: (error) => {
+      console.error('Erro na mutation de status:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao alterar status da loja",
+        variant: "destructive"
+      });
     }
   });
 
@@ -135,6 +184,23 @@ const LojasParticipantes = () => {
 
   if (isLoading) {
     return <div className="text-center py-8">Carregando lojas...</div>;
+  }
+
+  if (queryError) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <h3 className="text-lg font-semibold mb-2 text-destructive">Erro ao carregar lojas</h3>
+          <p className="text-muted-foreground text-center mb-4">
+            {queryError.message}
+          </p>
+          <p className="text-xs text-muted-foreground text-center">
+            Verifique se as funções do banco de dados estão configuradas corretamente.
+            Execute o script: scripts/setup-lojas-participantes-complete.sql
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

@@ -30,7 +30,8 @@ export const registerParticipant = async (values: RegisterFormValues, lojaIdenti
       uf: values.uf,
       senha: values.senha,
       genero: 'Não informado',
-      idade: values.data_nascimento ? String(new Date().getFullYear() - values.data_nascimento.getFullYear()) : '18'
+      idade: values.data_nascimento ? String(new Date().getFullYear() - values.data_nascimento.getFullYear()) : '18',
+      loja_origem: lojaIdentificador || null
     };
 
     console.log("Chamando authService.registerParticipant...");
