@@ -2,7 +2,8 @@
 -- Este script garante que todas as tabelas, funções e permissões estejam corretas
 
 -- Criar tabela lojas_participantes se não existir
-CREATE TABLE IF NOT EXISTS public.lojas_participantes (
+DROP TABLE IF EXISTS public.lojas_participantes CASCADE;
+CREATE TABLE public.lojas_participantes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nome_loja TEXT NOT NULL,
   identificador_url TEXT NOT NULL UNIQUE,
