@@ -22,8 +22,14 @@ CREATE INDEX IF NOT EXISTS idx_lojas_participantes_identificador ON public.lojas
 CREATE INDEX IF NOT EXISTS idx_lojas_participantes_ativa ON public.lojas_participantes(ativa);
 CREATE INDEX IF NOT EXISTS idx_participantes_loja_origem ON public.participantes(loja_origem);
 
+-- Remover funções existentes para evitar conflitos
+DROP FUNCTION IF EXISTS public.listar_lojas_participantes() CASCADE;
+DROP FUNCTION IF EXISTS public.cadastrar_loja_participante(TEXT, TEXT, TEXT) CASCADE;
+DROP FUNCTION IF EXISTS public.alterar_status_loja_participante(UUID, BOOLEAN) CASCADE;
+DROP FUNCTION IF EXISTS public.obter_loja_por_identificador(TEXT) CASCADE;
+
 -- Função para listar todas as lojas com contagem de participantes
-CREATE OR REPLACE FUNCTION public.listar_lojas_participantes()
+CREATE FUNCTION public.listar_lojas_participantes()
 RETURNS TABLE (
   id UUID,
   nome_loja TEXT,
@@ -55,7 +61,7 @@ END;
 $$;
 
 -- Função para cadastrar nova loja participante
-CREATE OR REPLACE FUNCTION public.cadastrar_loja_participante(
+CREATE FUNCTION public.cadastrar_loja_participante(
   p_nome_loja TEXT,
   p_identificador_url TEXT,
   p_descricao TEXT DEFAULT NULL
@@ -101,7 +107,7 @@ END;
 $$;
 
 -- Função para alterar status da loja
-CREATE OR REPLACE FUNCTION public.alterar_status_loja_participante(
+CREATE FUNCTION public.alterar_status_loja_participante(
   p_loja_id UUID,
   p_ativa BOOLEAN
 )
@@ -135,7 +141,7 @@ END;
 $$;
 
 -- Função para obter loja por identificador
-CREATE OR REPLACE FUNCTION public.obter_loja_por_identificador(
+CREATE FUNCTION public.obter_loja_por_identificador(
   p_identificador TEXT
 )
 RETURNS TABLE (
