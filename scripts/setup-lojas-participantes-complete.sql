@@ -177,7 +177,8 @@ CREATE TRIGGER update_lojas_participantes_updated_at
 ALTER TABLE public.lojas_participantes ENABLE ROW LEVEL SECURITY;
 
 -- Política para permitir acesso a todas as lojas
-CREATE POLICY IF NOT EXISTS "Permitir acesso a lojas participantes" ON public.lojas_participantes
+DROP POLICY IF EXISTS "Permitir acesso a lojas participantes" ON public.lojas_participantes;
+CREATE POLICY "Permitir acesso a lojas participantes" ON public.lojas_participantes
   FOR ALL USING (true);
 
 -- Conceder permissões
