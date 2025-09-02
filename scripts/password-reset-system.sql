@@ -20,7 +20,15 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON public.password_re
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_participante ON public.password_reset_tokens(participante_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires ON public.password_reset_tokens(expires_at);
 
--- Adicionar configuração de webhook N8N na tabela configuracao_geral (se não existir)
+-- Criar tabela de configuração geral (se não existir)
+CREATE TABLE IF NOT EXISTS public.configuracao_geral (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  webhook_n8n_url TEXT
+);
+
+-- Adicionar configuração de webhook N8N na tabela configuracao_geral (se não existir a coluna)
 DO $$
 BEGIN
   IF NOT EXISTS (
