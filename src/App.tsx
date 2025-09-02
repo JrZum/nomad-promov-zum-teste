@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import NumerosSorte from "./pages/NumerosSorte";
 import AdminAuth from "./pages/AdminAuth";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -41,6 +42,7 @@ const App = () => (
               
               {/* Rotas para usuários participantes */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/numeros" element={<NumerosSorte />} />
               
               {/* Rotas administrativas */}

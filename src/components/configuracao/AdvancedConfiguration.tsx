@@ -6,6 +6,7 @@ import NumberRangeConfiguration from "./NumberRangeConfiguration";
 import LimitConfiguration from "./LimitConfiguration";
 import PatternConfiguration from "./PatternConfiguration";
 import SeriesVisualization from "./SeriesVisualization";
+import WebhookN8NConfiguration from "./WebhookN8NConfiguration";
 
 const AdvancedConfiguration = () => {
   return (
@@ -19,6 +20,8 @@ const AdvancedConfiguration = () => {
         <LimitConfiguration />
         <PatternConfiguration />
       </div>
+
+      <WebhookN8NConfiguration />
 
       <SeriesVisualization />
     </div>
