@@ -197,6 +197,11 @@ const WebhookN8NConfiguration = () => {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Configure a URL do webhook do N8N para envio automático de links de reset de senha via email, SMS ou WhatsApp.
+            <br /><br />
+            <strong>⚠️ Erro 404?</strong> Verifique se:
+            <br />• O workflow está <strong>ativo</strong> no N8N
+            <br />• Adicionou o nó <strong>"Webhook"</strong> no workflow
+            <br />• Copiou a URL correta do webhook do N8N
           </AlertDescription>
         </Alert>
 
