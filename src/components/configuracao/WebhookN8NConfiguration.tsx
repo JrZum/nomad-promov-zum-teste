@@ -192,10 +192,26 @@ const WebhookN8NConfiguration = () => {
             onClick={testWebhook} 
             variant="outline"
             disabled={isLoading || !webhookUrl}
+            className="px-6"
           >
-            {isLoading ? "Testando..." : "Testar"}
+            {isLoading ? "🧪 Testando..." : "🧪 Testar Conexão"}
           </Button>
         </div>
+
+        <Alert>
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Dados de teste enviados:</strong>
+            <br />
+            • participante: "João Silva (TESTE)" / "teste@exemplo.com" / "11999887766"
+            <br />
+            • reset_link: link de exemplo com token de teste
+            <br />
+            • test_mode: true (indica que é teste)
+            <br />
+            • ⚠️ Não envie emails/SMS reais com dados de teste!
+          </AlertDescription>
+        </Alert>
 
         <Alert>
           <CheckCircle className="h-4 w-4" />
