@@ -102,31 +102,62 @@ const WebhookN8NConfiguration = () => {
 
     setIsLoading(true);
     try {
-      // Teste simples do webhook
+      // Dados de teste realistas simulando um reset de senha
       const testPayload = {
-        tipo: "test",
+        tipo: "password_reset",
         timestamp: new Date().toISOString(),
-        message: "Teste de conectividade do webhook N8N"
+        participante: {
+          nome: "João Silva (TESTE)",
+          email: "teste@exemplo.com", 
+          telefone: "11999887766"
+        },
+        reset_link: `${window.location.origin}/reset-password?token=test-token-123456`,
+        expires_in: "1 hora",
+        test_mode: true,
+        message: "🧪 Este é um teste do webhook N8N - não envie este email/SMS para usuários reais!"
       };
+
+      console.log("🧪 Enviando teste para N8N:", webhookUrl);
+      console.log("📦 Payload:", JSON.stringify(testPayload, null, 2));
 
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
         },
-        mode: "no-cors",
         body: JSON.stringify(testPayload),
       });
 
-      toast({
-        title: "Teste enviado",
-        description: "O teste foi enviado para o N8N. Verifique os logs do seu workflow para confirmar o recebimento.",
-      });
+      console.log("📡 Status da resposta:", response.status);
+      console.log("📡 Response OK:", response.ok);
+
+      if (response.ok) {
+        const responseText = await response.text();
+        console.log("📨 Resposta do N8N:", responseText);
+        
+        toast({
+          title: "✅ Teste enviado com sucesso!",
+          description: `Status: ${response.status}. Verifique os logs do N8N para confirmar o recebimento.`,
+        });
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
     } catch (error) {
-      console.error("Erro ao testar webhook:", error);
+      console.error("❌ Erro detalhado:", error);
+      
+      let errorMessage = "Erro desconhecido ao enviar teste.";
+      
+      if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+        errorMessage = "Erro de conectividade. Verifique se a URL está correta e acessível.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Erro no teste",
-        description: "Não foi possível enviar o teste. Verifique a URL e tente novamente.",
+        title: "❌ Erro no teste do webhook",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
