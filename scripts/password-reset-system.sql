@@ -392,14 +392,14 @@ CREATE TRIGGER trigger_limpar_tokens_expirados
 ALTER TABLE public.password_reset_tokens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.webhook_logs ENABLE ROW LEVEL SECURITY;
 
--- Políticas RLS para tokens de reset (substituir se já existir)
+-- Políticas RLS para tokens de reset
 DROP POLICY IF EXISTS "Tokens de reset são públicos para validação" ON public.password_reset_tokens;
 CREATE POLICY "Tokens de reset são públicos para validação" 
   ON public.password_reset_tokens FOR SELECT 
   TO anon, authenticated 
   USING (true);
 
--- Políticas RLS para logs de webhook (apenas admin)
+-- Políticas RLS para logs de webhook (apenas admin)  
 DROP POLICY IF EXISTS "Logs de webhook apenas para admin" ON public.webhook_logs;
 CREATE POLICY "Logs de webhook apenas para admin" 
   ON public.webhook_logs FOR ALL 
